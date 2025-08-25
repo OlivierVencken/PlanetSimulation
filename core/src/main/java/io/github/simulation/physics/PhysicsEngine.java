@@ -59,9 +59,10 @@ public class PhysicsEngine {
             double dx = bj.pos[0] - bi.pos[0];
             double dy = bj.pos[1] - bi.pos[1];
             double dz = bj.pos[2] - bi.pos[2];
-            double r2 = dx * dx + dy * dy + dz * dz + Simulation.SOFTENING;
+            double r2 = dx * dx + dy * dy + dz * dz + Simulation.SOFTENING * Simulation.SOFTENING;
             double invR3 = 1.0 / (Math.sqrt(r2) * r2);
-            double factor = (Simulation.G * Simulation.G_SCALE) * bj.mass * invR3;
+            // bj.mass is stored in simulation mass units; use G_SIM which is in sim units
+            double factor = (Simulation.G_SIM) * bj.mass * invR3;
             ax += factor * dx;
             ay += factor * dy;
             az += factor * dz;

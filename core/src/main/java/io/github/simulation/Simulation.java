@@ -28,6 +28,7 @@ import io.github.simulation.physics.Body;
 import io.github.simulation.physics.PhysicsEngine;
 import io.github.simulation.render.TrailRenderer;
 import io.github.simulation.util.Grid;
+import io.github.simulation.util.OrbitUtils;
 
 /**
  * Simulation class: creates the scene, camera, physics, trails and
@@ -64,20 +65,25 @@ public class Simulation {
     private Label focusedPositionLabel;
     private Label focusedSpeedLabel;
 
-    // simulation parameters
-    private double timeScale = 1.0;
-    private int substeps = 16;
     private boolean paused = false;
     private boolean trailsEnabled = true;
-    private boolean showGrid = true;
+    private boolean showGrid = false;
 
-    // time accumulator for simulation-time sampling
+    // simulation parameters
+    private double timeScale = 1.0;
+    private int physicsStepsPerSimSecond = 60;
     private float simTime = 0f;
+    private double simAccumulator = 0.0;
+    private int maxPhysicsStepsPerFrame = 1000000000;
 
     // physics constants
-    public static final double G = 6.67430e-11;
-    public static final double G_SCALE = 1e6;
-    public static final double SOFTENING = 1e-2;
+    public static final double G = 6.67430e-11; // SI
+    public static final double LENGTH_SCALE = 1e8; // 1 sim unit = 100,000 km
+    public static final double MASS_SCALE = 1e21;
+    // gravitational constant adjusted to simulation units: G_SIM = G * MASS_SCALE /
+    // Ls^3
+    public static final double G_SIM = G * MASS_SCALE / (LENGTH_SCALE * LENGTH_SCALE * LENGTH_SCALE);
+    public static final double SOFTENING = 1e-3;
 
     public void create() {
         modelBuilder = new ModelBuilder();
@@ -89,10 +95,10 @@ public class Simulation {
         environment.add(new PointLight().set(1f, 1f, 1f, new Vector3(0f, 200f, 200f), 1f));
 
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.position.set(0f, 100f, 300f);
+        camera.position.set(0f, 10f, 20f);
         camera.lookAt(0f, 0f, 0f);
-        camera.near = 0.1f;
-        camera.far = 100000f;
+        camera.near = 0.01f;
+        camera.far = 10000f;
         camera.update();
 
         physics = new PhysicsEngine(bodies);
@@ -152,12 +158,17 @@ public class Simulation {
         // update camera and UI
         fpController.update(delta);
 
-        // physics update
-        double simDt = delta * timeScale;
+        // physics update: fixed-step integration based on physicsStepsPerSimSecond
+        double simDt = delta * timeScale; // simulation seconds elapsed this frame
         if (!paused) {
-            double subDt = simDt / Math.max(1, substeps);
-            for (int i = 0; i < substeps; i++)
-                physics.integrate(subDt);
+            simAccumulator += simDt;
+            double fixedStep = 1.0 / Math.max(1, physicsStepsPerSimSecond); // sim-seconds per physics step
+            int steps = 0;
+            while (simAccumulator >= fixedStep && steps < maxPhysicsStepsPerFrame) {
+                physics.integrate(fixedStep);
+                simAccumulator -= fixedStep;
+                steps++;
+            }
         }
 
         // render bodies
@@ -205,7 +216,7 @@ public class Simulation {
     public void dispose() {
         for (Model m : modelsToDispose) {
             m.dispose();
-        } 
+        }
         if (bodyRenderer != null) {
             bodyRenderer.dispose();
         }
@@ -222,88 +233,92 @@ public class Simulation {
         modelsToDispose.clear();
         bodies.clear();
 
-        grid = new Grid(2000, 50, modelBuilder);
+        grid = new Grid(10000, 5, modelBuilder);
         grid.create();
         modelsToDispose.add(grid.getModel());
 
-        addBody("Sun", 333000, 0, 0, 0, 0, 0, 0, 20f, 1f, 0.9f, 0.2f);
-        addOrbitingBody("Mercury", 100, 100, 0, 0, 0, 0, 0, 0.2f, 0.2f, 0.2f, 0.2f);
-        addOrbitingBody("Venus", 100, 150, 0, 0, 0, 0, 0, 0.4f, 0.4f, 0.4f, 0.4f);
-        addOrbitingBody("Earth", 100, 200, 0, 0, 0, 0, 0, 0.5f, 0.2f, 0.6f, 1f);
-        addOrbitingBody("Mars", 100, 250, 0, 0, 0, 0, 0, 0.3f, 0.95f, 0.35f, 0.25f);
-        addOrbitingBody("Jupiter", 100, 300, 0, 0, 0, 0, 0, 1f, 0.5f, 0.2f, 0.1f);
-        addOrbitingBody("Saturn", 100, 350, 0, 0, 0, 0, 0, 0.8f, 0.6f, 0.4f, 0.2f);
-        addOrbitingBody("Uranus", 100, 400, 0, 0, 0, 0, 0, 0.5f, 0.7f, 0.8f, 0.3f);
-        addOrbitingBody("Neptune", 100, 450, 0, 0, 0, 0, 0, 0.4f, 0.5f, 0.6f, 0.2f);
+        // all units are in SI (meters, kg, seconds)
+        addBody("Sun", 1.989e30, 0, 0, 0, 0, 0, 0, 696340e3f, 1f, 0.9f, 0.2f);
 
-        Body Earth = bodies.get(3);
-        addBodyWithRelativeVelocity("Moon", 1, Earth, 0.1, 1, 0, 0.12f, 0.8f, 0.8f, 0.8f);
+        addOrbitingBody("Mercury", 3.3011e23, 57.91e9, 0, 0, 0, 0, 0, 2439.7e3f, 0.2f, 0.2f, 0.2f);
+        addOrbitingBody("Venus", 4.8675e24, 108.2e9, 0, 0, 0, 0, 0, 6051.8e3f, 0.4f, 0.4f, 0.4f);
+        addOrbitingBody("Earth", 5.9722e24, 149.6e9, 0, 0, 0, 0, 0, 6371e3f, 0.2f, 0.6f, 1f);
+        addOrbitingBody("Mars", 6.4171e23, 227.9e9, 0, 0, 0, 0, 0, 3389.5e3f, 0.95f, 0.35f, 0.25f);
+        addOrbitingBody("Jupiter", 1.8982e27, 778.5e9, 0, 0, 0, 0, 0, 69911e3f, 0.5f, 0.2f, 0.1f);
+        addOrbitingBody("Saturn", 5.6834e26, 1434e9, 0, 0, 0, 0, 0, 58232e3f, 0.6f, 0.4f, 0.2f);
+        addOrbitingBody("Uranus", 8.6810e25, 2871e9, 0, 0, 0, 0, 0, 25362e3f, 0.7f, 0.8f, 0.3f);
+        addOrbitingBody("Neptune", 1.02413e26, 4495e9, 0, 0, 0, 0, 0, 24622e3f, 0.5f, 0.6f, 0.2f);
 
-        // stable 3 body simulation
-        // set G = 1, G_scale = 1 and SOFTENING = 0
-        // addBody("A", 1, -0.97000436, 0.24308753, 0, 0.4662036850, 0.4323657300,0,
-        // 0.2f, 1f, 0f, 0f);
-        // addBody("B", 1, 0.0,0.0, 0, -0.93240737, -0.86473146,0, 0.2f, 0f, 1f, 0f);
-        // addBody("C", 1, 0.97000436,-0.24308753, 0, 0.4662036850, 0.4323657300,0,
-        // 0.2f, 0f, 0f, 1f);
+        Body earth = bodies.get(3);
+        addBodyWithRelativeVelocity("Moon", 7.342e22, earth, 0, 384400e3, 0, 1737.4e3f, 0.8f, 0.8f, 0.8f);
     }
 
     private void addBody(String name, double mass, double x, double y, double z,
             double vx, double vy, double vz,
             float radius, float r, float g, float b) {
+        // convert real-world units (meters, kg, m/s) to simulation units
+        double simMass = mass / MASS_SCALE;
+        double simX = x / LENGTH_SCALE;
+        double simY = y / LENGTH_SCALE;
+        double simZ = z / LENGTH_SCALE;
+        double simVx = vx / LENGTH_SCALE;
+        double simVy = vy / LENGTH_SCALE;
+        double simVz = vz / LENGTH_SCALE;
+        float simRadius = (float) (radius / LENGTH_SCALE);
+
         Material mat = new Material();
         mat.set(ColorAttribute.createDiffuse(r, g, b, 1f));
-        Model model = modelBuilder.createSphere(radius * 2f, radius * 2f, radius * 2f, 24, 24, mat,
+        Model model = modelBuilder.createSphere(simRadius * 2f, simRadius * 2f, simRadius * 2f, 24, 24, mat,
                 Usage.Position | Usage.Normal);
         modelsToDispose.add(model);
         ModelInstance instance = new ModelInstance(model);
-        Body body = new Body(name, mass, x, y, z, vx, vy, vz, radius, instance, r, g, b);
+        Body body = new Body(name, simMass, simX, simY, simZ, simVx, simVy, simVz, simRadius, instance, r, g, b);
+
         bodies.add(body);
     }
 
     private void addOrbitingBody(String name, double mass, double x, double y, double z, double vx, double vy,
             double vz, float radius, float r, float g, float b) {
+        double simX = x / LENGTH_SCALE;
+        double simY = y / LENGTH_SCALE;
+        double simZ = z / LENGTH_SCALE;
+        double simVx = vx / LENGTH_SCALE;
+        double simVy = vy / LENGTH_SCALE;
+        double simVz = vz / LENGTH_SCALE;
+
         double cx = bodies.size > 0 ? bodies.get(0).pos[0] : 0.0;
         double cy = bodies.size > 0 ? bodies.get(0).pos[1] : 0.0;
         double cz = bodies.size > 0 ? bodies.get(0).pos[2] : 0.0;
-        double dx = x - cx;
-        double dy = y - cy;
-        double dz = z - cz;
-        double rdist = Math.sqrt(dx * dx + dy * dy + dz * dz);
         double centralMass = bodies.size > 0 ? bodies.get(0).mass : 0.0;
-        double v_circ = Math.sqrt((G * G_SCALE) * centralMass / Math.max(rdist, 1e-6));
-        double vxp = -dz;
-        double vyp = 0;
-        double vzp = dx;
-        double len = Math.sqrt(vxp * vxp + vyp * vyp + vzp * vzp);
-        if (len == 0) {
-            vxp = 0;
-            vyp = 1;
-            vzp = 0;
-            len = 1;
-        }
-        vxp = vxp / len * v_circ;
-        vyp = vyp / len * v_circ;
-        vzp = vzp / len * v_circ;
-        addBody(name, mass, x, y, z, vx + vxp, vy + vyp, vz + vzp, radius, r, g, b);
+
+        double[] tangential = OrbitUtils.computeCircularVelocity(simX, simY, simZ, cx, cy, cz, centralMass,
+                Simulation.G_SIM);
+
+        double totalVx_mps = (simVx + tangential[0]) * Simulation.LENGTH_SCALE;
+        double totalVy_mps = (simVy + tangential[1]) * Simulation.LENGTH_SCALE;
+        double totalVz_mps = (simVz + tangential[2]) * Simulation.LENGTH_SCALE;
+
+        addBody(name, mass, x, y, z, totalVx_mps, totalVy_mps, totalVz_mps, radius, r, g, b);
     }
 
     private void addBodyWithRelativeVelocity(String name, double mass, Body parent, double relX, double relY,
             double relZ, float radius, float r, float g, float b) {
-        double x = parent.pos[0] + relX;
-        double y = parent.pos[1] + relY;
-        double z = parent.pos[2] + relZ;
-        double dx = x - parent.pos[0];
-        double dy = y - parent.pos[1];
-        double dz = z - parent.pos[2];
-        double rdist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        double v_circ = Math.sqrt((G * G_SCALE) * parent.mass / Math.max(rdist, 1e-6));
-        double vxp = -dz, vyp = 0, vzp = dx;
-        double len = Math.sqrt(vxp * vxp + vyp * vyp + vzp * vzp);
-        vxp = vxp / len * v_circ;
-        vyp = vyp / len * v_circ;
-        vzp = vzp / len * v_circ;
-        addBody(name, mass, x, y, z, parent.vel[0] + vxp, parent.vel[1] + vyp, parent.vel[2] + vzp, radius, r, g, b);
+        double simRelX = relX / LENGTH_SCALE;
+        double simRelY = relY / LENGTH_SCALE;
+        double simRelZ = relZ / LENGTH_SCALE;
+        double x = parent.pos[0] + simRelX;
+        double y = parent.pos[1] + simRelY;
+        double z = parent.pos[2] + simRelZ;
+
+        double[] tangential = OrbitUtils.computeCircularVelocity(x, y, z, parent.pos[0], parent.pos[1], parent.pos[2],
+                parent.mass, Simulation.G_SIM);
+
+        addBody(name, mass,
+                x * Simulation.LENGTH_SCALE, y * Simulation.LENGTH_SCALE, z * Simulation.LENGTH_SCALE,
+                (parent.vel[0] + tangential[0]) * Simulation.LENGTH_SCALE,
+                (parent.vel[1] + tangential[1]) * Simulation.LENGTH_SCALE,
+                (parent.vel[2] + tangential[2]) * Simulation.LENGTH_SCALE,
+                radius, r, g, b);
     }
 
     // getters / setters / control
@@ -356,7 +371,10 @@ public class Simulation {
     }
 
     public void singleStep() {
-        if (paused)
-            physics.integrate(1.0 / 60.0);
+        if (paused) {
+            double fixedStep = 1.0 / Math.max(1, physicsStepsPerSimSecond);
+            physics.integrate(fixedStep);
+            simTime += (float) fixedStep;
+        }
     }
 }

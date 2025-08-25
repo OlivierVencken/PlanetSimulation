@@ -90,15 +90,13 @@ public class BodyRenderer {
         Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
 
         // Enable for 3d rendering without glow
-        /**
-         * modelBatch.begin(cam);
-         * for (Body b : bodies) {
-         * b.instance.transform.setToTranslation((float) b.pos[0], (float) b.pos[1],
-         * (float) b.pos[2]);
-         * modelBatch.render(b.instance, environment);
-         * }
-         * modelBatch.end();
-         */
+        //modelBatch.begin(cam);
+        //for (Body b : bodies) {
+        //    b.instance.transform.setToTranslation((float) b.pos[0], (float) b.pos[1],
+        //            (float) b.pos[2]);
+        //    modelBatch.render(b.instance, environment);
+        //}
+        //modelBatch.end();
 
         // Render glow effect for each body
         orthoMatrix.setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());

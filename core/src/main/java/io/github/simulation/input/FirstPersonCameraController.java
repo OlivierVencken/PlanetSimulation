@@ -25,7 +25,7 @@ public class FirstPersonCameraController extends InputAdapter {
     private float yaw; // radians
     private float pitch; // radians
     private float mouseSensitivity = 0.0025f;
-    private float moveSpeed = 30f;
+    private float moveSpeed = 50f;
     private boolean cursorCatched = true;
     private boolean ignoreNextMouseDelta = true; // consume first delta after capture
 
@@ -34,6 +34,9 @@ public class FirstPersonCameraController extends InputAdapter {
     private float focusYaw = 45f; // degrees
     private float focusPitch = 20f; // degrees
     private float focusZoomDistance = 40f;
+    private static final float DEFAULT_FOCUS_FRACTION = 0.6f; // fraction of screen height the planet should occupy
+    private static final float MIN_DISTANCE_FACTOR = 1.2f; // minimum distance = radius * factor
+    private static final float ZOOM_SENSITIVITY = 0.15f; // proportional zoom per scroll unit
 
     private static final float MAX_MOUSE_DELTA = 200f; // pixels, clamp to avoid jumps
 
@@ -184,7 +187,12 @@ public class FirstPersonCameraController extends InputAdapter {
     public void updateFocusedMovement(Array<Body> bodies, float delta) {
         if (focusedBodyIndex >= 0 && focusedBodyIndex < bodies.size) {
             io.github.simulation.physics.Body b = bodies.get(focusedBodyIndex);
+            // Ensure focusZoomDistance is computed relative to body radius so framing is consistent
             float r = focusZoomDistance;
+            if (r <= 0f) {
+                r = computeFocusDistance(b);
+                focusZoomDistance = r;
+            }
             // Clamp pitch to avoid passing over the poles
             focusPitch = MathUtils.clamp(focusPitch, 0.1f, 179.9f);
             float yawRad = MathUtils.degreesToRadians * focusYaw;
@@ -218,6 +226,23 @@ public class FirstPersonCameraController extends InputAdapter {
         }
     }
 
+    private float computeFocusDistance(Body b) {
+        // b.radius is in simulation length units; compute a camera distance so the body
+        // fills roughly DEFAULT_FOCUS_FRACTION of the vertical FOV.
+        float R = (float) b.radius; // sim units
+        float fovRad = MathUtils.degreesToRadians * camera.fieldOfView;
+        float halfView = fovRad * DEFAULT_FOCUS_FRACTION * 0.5f;
+        float sinHalf = MathUtils.sin(halfView);
+        float desired;
+        if (sinHalf <= 1e-6f) {
+            desired = R * MIN_DISTANCE_FACTOR;
+        } else {
+            desired = R / sinHalf;
+            desired = Math.max(desired, R * MIN_DISTANCE_FACTOR);
+        }
+        return desired;
+    }
+
     public boolean isFocusedOnBody() {
         return focusedBodyIndex >= 0;
     }
@@ -232,6 +257,13 @@ public class FirstPersonCameraController extends InputAdapter {
 
     public void setFocus(int bodyIndex) {
         focusedBodyIndex = bodyIndex;
+        if (focusedBodyIndex >= 0) {
+            Array<io.github.simulation.physics.Body> bodies = sim.getBodies();
+            if (focusedBodyIndex < bodies.size) {
+                Body b = bodies.get(focusedBodyIndex);
+                focusZoomDistance = computeFocusDistance(b);
+            }
+        }
     }
 
     public void clearFocus() {
@@ -244,7 +276,10 @@ public class FirstPersonCameraController extends InputAdapter {
     }
 
     public void zoomFocusedBody(float delta) {
-        focusZoomDistance = Math.max(1f, focusZoomDistance + delta);
+    // Make zoom proportional to current distance so it feels consistent across scales
+    float factor = 1f + delta * ZOOM_SENSITIVITY;
+    factor = MathUtils.clamp(factor, 0.01f, 10f);
+    focusZoomDistance = Math.max(0.01f, focusZoomDistance * factor);
     }
 
     public int getFocusedBodyIndex() {

@@ -30,16 +30,16 @@ public class Grid {
         int numLines = gridSize / boxSize + 1;
         ModelBuilder mb = modelBuilder;
         mb.begin();
-        Material gridMat = new Material(ColorAttribute.createDiffuse(0.7f, 0.7f, 0.7f, 0.5f));
+        Material gridMat = new Material(ColorAttribute.createDiffuse(0.7f, 0.7f, 0.7f, 0.01f));
         long attr = Usage.Position | Usage.ColorUnpacked;
         com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder builder = mb.part("grid", GL20.GL_LINES, attr, gridMat);
         for (int i = 0; i < numLines; i++) {
             float pos = -gridSize / 2f + i * boxSize;
             // vertical lines (parallel to z)
-            builder.setColor(0.7f, 0.7f, 0.7f, 0.5f);
+            builder.setColor(0.7f, 0.7f, 0.7f, 0.05f);
             builder.line(pos, 0f, -gridSize / 2f, pos, 0f, gridSize / 2f);
             // horizontal lines (parallel to x)
-            builder.setColor(0.7f, 0.7f, 0.7f, 0.5f);
+            builder.setColor(0.7f, 0.7f, 0.7f, 0.05f);
             builder.line(-gridSize / 2f, 0f, pos, gridSize / 2f, 0f, pos);
         }
         Model gridModel = mb.end();
