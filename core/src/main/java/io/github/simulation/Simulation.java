@@ -54,15 +54,14 @@ public class Simulation {
     private Stage uiStage;
     private Label fpsLabel;
     private Label timescaleLabel;
+    private Label elapsedTimeLabel;
     private Label pausedLabel;
-    private Label gridLabel;
 
     // focused body info UI
     private Table focusedInfoTable;
     private Label focusedNameLabel;
     private Label focusedMassLabel;
     private Label focusedRadiusLabel;
-    private Label focusedPositionLabel;
     private Label focusedSpeedLabel;
 
     private boolean paused = false;
@@ -70,7 +69,7 @@ public class Simulation {
     private boolean showGrid = false;
 
     // simulation parameters
-    private double timeScale = 1.0;
+    private double timeScale = 86400.0; // number of simulation seconds simulated per 1 real second
     private int substeps = 512;
     private float simTime = 0f;
 
@@ -114,12 +113,12 @@ public class Simulation {
         table.setFillParent(true);
         fpsLabel = new Label("FPS: " + Gdx.graphics.getFramesPerSecond(), style);
         timescaleLabel = new Label("Time Scale: " + timeScale, style);
+        elapsedTimeLabel = new Label("Elapsed: 0s", style);
         pausedLabel = new Label("Paused: " + paused, style);
-        gridLabel = new Label("Grid: " + showGrid, style);
         table.add(fpsLabel).left().pad(6).row();
         table.add(timescaleLabel).left().pad(6).row();
+        table.add(elapsedTimeLabel).left().pad(6).row();
         table.add(pausedLabel).left().pad(6).row();
-        table.add(gridLabel).left().pad(6).row();
         uiStage.addActor(table);
 
         // focused body info
@@ -129,12 +128,10 @@ public class Simulation {
         focusedNameLabel = new Label("", style);
         focusedMassLabel = new Label("", style);
         focusedRadiusLabel = new Label("", style);
-        focusedPositionLabel = new Label("", style);
         focusedSpeedLabel = new Label("", style);
         focusedInfoTable.add(focusedNameLabel).right().pad(6).row();
         focusedInfoTable.add(focusedMassLabel).right().pad(6).row();
         focusedInfoTable.add(focusedRadiusLabel).right().pad(6).row();
-        focusedInfoTable.add(focusedPositionLabel).right().pad(6).row();
         focusedInfoTable.add(focusedSpeedLabel).right().pad(6).row();
         uiStage.addActor(focusedInfoTable);
 
@@ -151,19 +148,21 @@ public class Simulation {
 
     public void render() {
         float delta = Gdx.graphics.getDeltaTime();
-        simTime += delta * (float) timeScale;
 
-        // physics update
-        double simDt = delta * timeScale;
         if (!paused) {
-            double subDt = simDt / Math.max(1, substeps);
-            for (int i = 0; i < substeps; i++)
-                physics.integrate(subDt);
+            simTime += delta * (float) timeScale;
 
-            // update camera
-            // inside update loop to prevent flickering
-            fpController.update(delta);
+            // physics update
+            double simDt = delta * timeScale;
+
+            double subDt = simDt / Math.max(1, substeps);
+            for (int i = 0; i < substeps; i++) {
+                physics.integrate(subDt);
+            }
         }
+
+        // update camera
+        fpController.update(delta);
 
         // render bodies
         bodyRenderer.render(camera, environment, bodies);
@@ -180,25 +179,24 @@ public class Simulation {
 
         // update UI labels
         fpsLabel.setText("FPS: " + Gdx.graphics.getFramesPerSecond());
-        timescaleLabel.setText(String.format("timeScale: %.3g", timeScale));
+        timescaleLabel.setText(String.format("timeScale: %.6g", timeScale));
         pausedLabel.setText("paused: " + paused);
-        gridLabel.setText("Grid: " + showGrid);
+        elapsedTimeLabel.setText("Elapsed: " + formatElapsedTime(simTime));
 
         // update focused body info
         int idx = fpController.getFocusedBodyIndex();
         if (idx >= 0 && idx < bodies.size) {
             Body fb = bodies.get(idx);
             focusedNameLabel.setText("Name: " + fb.name);
-            focusedMassLabel.setText(String.format("Mass: %.6g", fb.mass));
-            focusedRadiusLabel.setText(String.format("Radius: %.3g", fb.radius));
-            focusedPositionLabel.setText(String.format("Pos: (%.3g, %.3g, %.3g)", fb.pos[0], fb.pos[1], fb.pos[2]));
-            double speed = Math.sqrt(fb.vel[0] * fb.vel[0] + fb.vel[1] * fb.vel[1] + fb.vel[2] * fb.vel[2]);
-            focusedSpeedLabel.setText(String.format("Speed: %.3g", speed));
+            focusedMassLabel.setText(String.format("Mass: %.4g", fb.mass * MASS_SCALE) + " m");
+            focusedRadiusLabel.setText(String.format("Radius: %.4g", fb.radius * LENGTH_SCALE) + " m");
+            double speed = Math.sqrt(fb.vel[0] * fb.vel[0] + fb.vel[1] * fb.vel[1] + fb.vel[2] * fb.vel[2])
+                    * LENGTH_SCALE;
+            focusedSpeedLabel.setText(String.format("Speed: %.6g", speed) + " m/s");
         } else {
             focusedNameLabel.setText("");
             focusedMassLabel.setText("");
             focusedRadiusLabel.setText("");
-            focusedPositionLabel.setText("");
             focusedSpeedLabel.setText("");
         }
 
@@ -315,6 +313,22 @@ public class Simulation {
                 radius, r, g, b);
     }
 
+    private String formatElapsedTime(float seconds) {
+        if (seconds < 60) {
+            return String.format("%.1fs", seconds);
+        } else if (seconds < 3600) {
+            return String.format("%.1fm", seconds / 60);
+        } else if (seconds < 86400) {
+            return String.format("%.1fh", seconds / 3600);
+        } else if (seconds < 86400 * 30.44) { // average days per month
+            return String.format("%.1fd", seconds / 86400);
+        } else if (seconds < 86400 * 365.25) { // days per year
+            return String.format("%.1fmo", seconds / (86400 * 30.44));
+        } else {
+            return String.format("%.2fy", seconds / (86400 * 365.25));
+        }
+    }
+
     // getters / setters / control
     public Array<Body> getBodies() {
         return bodies;
@@ -367,6 +381,6 @@ public class Simulation {
     public void singleStep() {
         if (paused) {
             physics.integrate(1.0 / 60.0);
-        }  
+        }
     }
 }
