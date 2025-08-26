@@ -56,6 +56,7 @@ public class Simulation {
     private Label timescaleLabel;
     private Label elapsedTimeLabel;
     private Label pausedLabel;
+    private Label fovLabel;
 
     // focused body info UI
     private Table focusedInfoTable;
@@ -115,10 +116,12 @@ public class Simulation {
         timescaleLabel = new Label("Time Scale: " + timeScale, style);
         elapsedTimeLabel = new Label("Elapsed: 0s", style);
         pausedLabel = new Label("Paused: " + paused, style);
+        fovLabel = new Label("FOV: " + (int) camera.fieldOfView, style);
         table.add(fpsLabel).left().pad(6).row();
         table.add(timescaleLabel).left().pad(6).row();
         table.add(elapsedTimeLabel).left().pad(6).row();
         table.add(pausedLabel).left().pad(6).row();
+        table.add(fovLabel).left().pad(6).row();
         uiStage.addActor(table);
 
         // focused body info
@@ -182,13 +185,14 @@ public class Simulation {
         timescaleLabel.setText(String.format("timeScale: %.6g", timeScale));
         pausedLabel.setText("paused: " + paused);
         elapsedTimeLabel.setText("Elapsed: " + formatElapsedTime(simTime));
+        fovLabel.setText("FOV: " + (int) camera.fieldOfView);
 
         // update focused body info
         int idx = fpController.getFocusedBodyIndex();
         if (idx >= 0 && idx < bodies.size) {
             Body fb = bodies.get(idx);
             focusedNameLabel.setText("Name: " + fb.name);
-            focusedMassLabel.setText(String.format("Mass: %.4g", fb.mass * MASS_SCALE) + " m");
+            focusedMassLabel.setText(String.format("Mass: %.4g", fb.mass * MASS_SCALE) + " kg");
             focusedRadiusLabel.setText(String.format("Radius: %.4g", fb.radius * LENGTH_SCALE) + " m");
             double speed = Math.sqrt(fb.vel[0] * fb.vel[0] + fb.vel[1] * fb.vel[1] + fb.vel[2] * fb.vel[2])
                     * LENGTH_SCALE;

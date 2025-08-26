@@ -112,8 +112,10 @@ public class FirstPersonCameraController extends InputAdapter {
         if (sim.isFocusedOnBody()) {
             zoomFocusedBody(amountY * 3f); // scroll up: zoom in, scroll down: zoom out
             return true;
+        } else {
+            zoomFOV(amountY * 10f);
+            return true;
         }
-        return false;
     }
 
     public void update(float delta) {
@@ -188,7 +190,7 @@ public class FirstPersonCameraController extends InputAdapter {
         if (focusedBodyIndex >= 0 && focusedBodyIndex < bodies.size) {
             Body b = bodies.get(focusedBodyIndex);
             // Use the current focusZoomDistance. The initial auto-scale is applied when
-            // focus is set 
+            // focus is set
             float r = focusZoomDistance;
             // Clamp pitch to avoid passing over the poles
             focusPitch = MathUtils.clamp(focusPitch, 0.1f, 179.9f);
@@ -249,9 +251,9 @@ public class FirstPersonCameraController extends InputAdapter {
             clearFocus();
             return;
         }
-    focusedBodyIndex = (focusedBodyIndex + 1) % bodies.size;
-    // apply initial auto-scaling for the newly focused body
-    setFocus(focusedBodyIndex);
+        focusedBodyIndex = (focusedBodyIndex + 1) % bodies.size;
+        // apply initial auto-scaling for the newly focused body
+        setFocus(focusedBodyIndex);
     }
 
     public void setFocus(int bodyIndex) {
@@ -275,10 +277,17 @@ public class FirstPersonCameraController extends InputAdapter {
     }
 
     public void zoomFocusedBody(float delta) {
-    // Make zoom proportional to current distance so it feels consistent across scales
-    float factor = 1f + delta * ZOOM_SENSITIVITY;
-    factor = MathUtils.clamp(factor, 0.01f, 10f);
-    focusZoomDistance = Math.max(0.01f, focusZoomDistance * factor);
+        // Make zoom proportional to current distance so it feels consistent across
+        // scales
+        float factor = 1f + delta * ZOOM_SENSITIVITY;
+        factor = MathUtils.clamp(factor, 0.01f, 10f);
+        focusZoomDistance = Math.max(0.01f, focusZoomDistance * factor);
+    }
+
+    public void zoomFOV(float delta) {
+        float factor = delta * ZOOM_SENSITIVITY;
+        factor = MathUtils.clamp(factor, -10f, 10f);
+        camera.fieldOfView = MathUtils.clamp(camera.fieldOfView + factor, 20, 160);
     }
 
     public int getFocusedBodyIndex() {
