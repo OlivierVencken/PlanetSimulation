@@ -24,7 +24,7 @@ public class TrailRenderer {
     private int capacityVertices;
     private ShaderProgram shader;
     private final float trailSampleInterval = 0.01f;
-    private final float trailDuration = 64f;
+    private final float trailDuration = 50000f;
 
     public TrailRenderer(int initialCapacityVertices) {
         this.capacityVertices = initialCapacityVertices;

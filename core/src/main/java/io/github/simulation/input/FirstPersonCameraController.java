@@ -35,7 +35,7 @@ public class FirstPersonCameraController extends InputAdapter {
     private float focusPitch = 20f; // degrees
     private float focusZoomDistance = 40f;
     private static final float DEFAULT_FOCUS_FRACTION = 0.6f; // fraction of screen height the planet should occupy
-    private static final float MIN_DISTANCE_FACTOR = 1.2f; // minimum distance = radius * factor
+    private static final float MIN_DISTANCE_FACTOR = 1f; // minimum distance = radius * factor
     private static final float ZOOM_SENSITIVITY = 0.15f; // proportional zoom per scroll unit
 
     private static final float MAX_MOUSE_DELTA = 200f; // pixels, clamp to avoid jumps
@@ -186,13 +186,10 @@ public class FirstPersonCameraController extends InputAdapter {
 
     public void updateFocusedMovement(Array<Body> bodies, float delta) {
         if (focusedBodyIndex >= 0 && focusedBodyIndex < bodies.size) {
-            io.github.simulation.physics.Body b = bodies.get(focusedBodyIndex);
-            // Ensure focusZoomDistance is computed relative to body radius so framing is consistent
+            Body b = bodies.get(focusedBodyIndex);
+            // Use the current focusZoomDistance. The initial auto-scale is applied when
+            // focus is set 
             float r = focusZoomDistance;
-            if (r <= 0f) {
-                r = computeFocusDistance(b);
-                focusZoomDistance = r;
-            }
             // Clamp pitch to avoid passing over the poles
             focusPitch = MathUtils.clamp(focusPitch, 0.1f, 179.9f);
             float yawRad = MathUtils.degreesToRadians * focusYaw;
@@ -247,18 +244,20 @@ public class FirstPersonCameraController extends InputAdapter {
         return focusedBodyIndex >= 0;
     }
 
-    public void cycleCameraFocus(Array<io.github.simulation.physics.Body> bodies) {
+    public void cycleCameraFocus(Array<Body> bodies) {
         if (bodies.size == 0) {
             clearFocus();
             return;
         }
-        focusedBodyIndex = (focusedBodyIndex + 1) % bodies.size;
+    focusedBodyIndex = (focusedBodyIndex + 1) % bodies.size;
+    // apply initial auto-scaling for the newly focused body
+    setFocus(focusedBodyIndex);
     }
 
     public void setFocus(int bodyIndex) {
         focusedBodyIndex = bodyIndex;
         if (focusedBodyIndex >= 0) {
-            Array<io.github.simulation.physics.Body> bodies = sim.getBodies();
+            Array<Body> bodies = sim.getBodies();
             if (focusedBodyIndex < bodies.size) {
                 Body b = bodies.get(focusedBodyIndex);
                 focusZoomDistance = computeFocusDistance(b);

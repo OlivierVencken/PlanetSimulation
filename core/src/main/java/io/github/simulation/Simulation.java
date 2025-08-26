@@ -52,9 +52,9 @@ public class Simulation {
 
     // rendering helpers
     private Stage uiStage;
+    private Label fpsLabel;
     private Label timescaleLabel;
     private Label pausedLabel;
-    private Label fpsLabel;
     private Label gridLabel;
 
     // focused body info UI
@@ -71,10 +71,8 @@ public class Simulation {
 
     // simulation parameters
     private double timeScale = 1.0;
-    private int physicsStepsPerSimSecond = 60;
+    private int substeps = 512;
     private float simTime = 0f;
-    private double simAccumulator = 0.0;
-    private int maxPhysicsStepsPerFrame = 1000000000;
 
     // physics constants
     public static final double G = 6.67430e-11; // SI
@@ -98,7 +96,7 @@ public class Simulation {
         camera.position.set(0f, 10f, 20f);
         camera.lookAt(0f, 0f, 0f);
         camera.near = 0.01f;
-        camera.far = 10000f;
+        camera.far = 100000f;
         camera.update();
 
         physics = new PhysicsEngine(bodies);
@@ -114,9 +112,9 @@ public class Simulation {
         Table table = new Table();
         table.top().left();
         table.setFillParent(true);
+        fpsLabel = new Label("FPS: " + Gdx.graphics.getFramesPerSecond(), style);
         timescaleLabel = new Label("Time Scale: " + timeScale, style);
         pausedLabel = new Label("Paused: " + paused, style);
-        fpsLabel = new Label("FPS: " + Gdx.graphics.getFramesPerSecond(), style);
         gridLabel = new Label("Grid: " + showGrid, style);
         table.add(fpsLabel).left().pad(6).row();
         table.add(timescaleLabel).left().pad(6).row();
@@ -155,20 +153,16 @@ public class Simulation {
         float delta = Gdx.graphics.getDeltaTime();
         simTime += delta * (float) timeScale;
 
-        // update camera and UI
-        fpController.update(delta);
-
-        // physics update: fixed-step integration based on physicsStepsPerSimSecond
-        double simDt = delta * timeScale; // simulation seconds elapsed this frame
+        // physics update
+        double simDt = delta * timeScale;
         if (!paused) {
-            simAccumulator += simDt;
-            double fixedStep = 1.0 / Math.max(1, physicsStepsPerSimSecond); // sim-seconds per physics step
-            int steps = 0;
-            while (simAccumulator >= fixedStep && steps < maxPhysicsStepsPerFrame) {
-                physics.integrate(fixedStep);
-                simAccumulator -= fixedStep;
-                steps++;
-            }
+            double subDt = simDt / Math.max(1, substeps);
+            for (int i = 0; i < substeps; i++)
+                physics.integrate(subDt);
+
+            // update camera
+            // inside update loop to prevent flickering
+            fpController.update(delta);
         }
 
         // render bodies
@@ -372,9 +366,7 @@ public class Simulation {
 
     public void singleStep() {
         if (paused) {
-            double fixedStep = 1.0 / Math.max(1, physicsStepsPerSimSecond);
-            physics.integrate(fixedStep);
-            simTime += (float) fixedStep;
-        }
+            physics.integrate(1.0 / 60.0);
+        }  
     }
 }
