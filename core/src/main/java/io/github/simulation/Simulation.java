@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
-import io.github.simulation.render.BodyRenderer;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
@@ -16,6 +15,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -26,6 +26,8 @@ import io.github.simulation.input.FirstPersonCameraController;
 import io.github.simulation.input.SimulationInputProcessor;
 import io.github.simulation.physics.Body;
 import io.github.simulation.physics.PhysicsEngine;
+import io.github.simulation.render.BodyRenderer;
+import io.github.simulation.render.StarfieldRenderer;
 import io.github.simulation.render.TrailRenderer;
 import io.github.simulation.util.Grid;
 import io.github.simulation.util.OrbitUtils;
@@ -38,6 +40,7 @@ public class Simulation {
     private Environment environment;
     private PerspectiveCamera camera;
     private ModelBuilder modelBuilder;
+    private StarfieldRenderer starfield;
     private BodyRenderer bodyRenderer;
     private TrailRenderer trailRenderer;
     private Grid grid;
@@ -96,8 +99,11 @@ public class Simulation {
         camera.position.set(0f, 10f, 20f);
         camera.lookAt(0f, 0f, 0f);
         camera.near = 0.01f;
-        camera.far = 100000f;
+        camera.far = 10000f;
         camera.update();
+
+        starfield = new StarfieldRenderer(10000); 
+        starfield.create(camera);
 
         physics = new PhysicsEngine(bodies);
         fpController = new FirstPersonCameraController(this, camera);
@@ -167,12 +173,20 @@ public class Simulation {
         // update camera
         fpController.update(delta);
 
+        // clear screen
+        Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
+
+        // render starfield
+        starfield.render(camera);
+
         // render bodies
         bodyRenderer.render(camera, environment, bodies);
 
         // render trails
         if (trailsEnabled) {
-            trailRenderer.render(camera, bodies, (float) simTime);
+            trailRenderer.render(camera, bodies, simTime);
         }
 
         // render grid for debugging
@@ -212,6 +226,9 @@ public class Simulation {
     public void dispose() {
         for (Model m : modelsToDispose) {
             m.dispose();
+        }
+        if (starfield != null) {
+            starfield.dispose();
         }
         if (bodyRenderer != null) {
             bodyRenderer.dispose();
