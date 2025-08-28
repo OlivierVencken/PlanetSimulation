@@ -1,3 +1,4 @@
+// File: Simulation.java
 package io.github.simulation;
 
 import com.badlogic.gdx.Gdx;
@@ -84,7 +85,7 @@ public class Simulation {
     // gravitational constant adjusted to simulation units: G_SIM = G * MASS_SCALE /
     // Ls^3
     public static final double G_SIM = G * MASS_SCALE / (LENGTH_SCALE * LENGTH_SCALE * LENGTH_SCALE);
-    public static final double SOFTENING = 0; //1e-3
+    public static final double SOFTENING = 0; // 1e-3
 
     public void create() {
         modelBuilder = new ModelBuilder();
@@ -275,94 +276,94 @@ public class Simulation {
         Body pluto = bodies.get(9);
 
         // --- Earth ---
-        addBodyWithRelativeVelocity("Moon", 7.342000e+22, earth,
-                3.683615e+08, 2.019048e+07, 1.817938e+06,
+        addBodyFromKepler("Moon", 7.342000e22, earth,
+                384400e3, 0.0549, 5.145, 125.08, 318.15, 45.0,
                 1737400.0f, 0.8f, 0.8f, 0.8f);
 
         // --- Mars ---
-        addBodyWithRelativeVelocity("Phobos", 1.065900e+16, mars,
-                9.095125e+06, 1.603433e+06, 3.010441e+04,
+        addBodyFromKepler("Phobos", 1.065900e16, mars,
+                9376e3, 0.0151, 1.075, 0.0, 0.0, 10.0,
                 11270.0f, 0.5f, 0.5f, 0.5f);
 
-        addBodyWithRelativeVelocity("Deimos", 1.476200e+15, mars,
-                -1.173041e+07, 2.030777e+07, 6.338690e+05,
+        addBodyFromKepler("Deimos", 1.476200e15, mars,
+                23463e3, 0.0002, 1.793, 0.0, 0.0, 200.0,
                 6200.0f, 0.6f, 0.6f, 0.6f);
 
-        // --- Jupiter ---
-        addBodyWithRelativeVelocity("Io", 8.930000e+22, jupiter,
-                -1.717852e+08, 3.835097e+08, 3.346754e+05,
+        // --- Jupiter (Galilean moons) ---
+        addBodyFromKepler("Io", 8.93e22, jupiter,
+                421700e3, 0.0041, 0.036, 43.977, 84.129, 10.0,
                 1821600.0f, 0.95f, 0.75f, 0.35f);
 
-        addBodyWithRelativeVelocity("Europa", 4.800000e+22, jupiter,
-                -6.576218e+08, 1.281818e+08, 1.051505e+06,
+        addBodyFromKepler("Europa", 4.80e22, jupiter,
+                671100e3, 0.009, 0.470, 219.106, 88.970, 80.0,
                 1560800.0f, 0.9f, 0.9f, 1.0f);
 
-        addBodyWithRelativeVelocity("Ganymede", 1.481900e+23, jupiter,
-                9.496836e+08, -4.961215e+08, -1.532640e+06,
+        addBodyFromKepler("Ganymede", 1.4819e23, jupiter,
+                1070400e3, 0.0013, 0.177, 63.552, 192.417, 140.0,
                 2631200.0f, 0.7f, 0.7f, 0.8f);
 
-        addBodyWithRelativeVelocity("Callisto", 1.075900e+23, jupiter,
-                1.276965e+09, -1.386591e+09, -4.646530e+06,
+        addBodyFromKepler("Callisto", 1.0759e23, jupiter,
+                1882700e3, 0.0074, 0.192, 298.848, 52.643, 260.0,
                 2410300.0f, 0.55f, 0.55f, 0.55f);
 
-        // --- Saturn ---
-        addBodyWithRelativeVelocity("Titan", 1.345200e+23, saturn,
-                -8.662181e+08, -8.224852e+08, -4.737227e+06,
+        // --- Saturn (major moons) ---
+        addBodyFromKepler("Titan", 1.3452e23, saturn,
+                1221870e3, 0.0288, 0.330, 168.811, 183.517, 40.0,
                 2574700.0f, 1.0f, 0.6f, 0.3f);
 
-        addBodyWithRelativeVelocity("Rhea", 2.306500e+21, saturn,
-                -5.068090e+08, 1.448344e+08, 8.721146e+05,
+        addBodyFromKepler("Rhea", 2.3065e21, saturn,
+                527040e3, 0.0013, 0.345, 60.094, 69.051, 95.0,
                 764300.0f, 0.75f, 0.75f, 0.75f);
 
-        addBodyWithRelativeVelocity("Iapetus", 1.805600e+21, saturn,
-                2.344478e+09, 2.770206e+09, 3.641635e+08,
+        addBodyFromKepler("Iapetus", 1.8056e21, saturn,
+                3560820e3, 0.0283, 7.489, 33.0, 200.0, 210.0,
                 734500.0f, 0.82f, 0.72f, 0.6f);
 
-        addBodyWithRelativeVelocity("Dione", 1.095500e+21, saturn,
-                3.492484e+08, 1.411055e+08, 4.679236e+04,
+        addBodyFromKepler("Dione", 1.0955e21, saturn,
+                377396e3, 0.0022, 0.019, 192.0, 352.0, 30.0,
                 561400.0f, 0.78f, 0.78f, 0.78f);
 
-        addBodyWithRelativeVelocity("Tethys", 6.175000e+20, saturn,
-                1.473438e+08, -2.551608e+08, -4.859242e+06,
+        addBodyFromKepler("Tethys", 6.175e20, saturn,
+                294660e3, 0.0001, 1.091, 51.0, 140.0, 160.0,
                 531100.0f, 0.8f, 0.8f, 0.8f);
 
-        addBodyWithRelativeVelocity("Enceladus", 1.080200e+20, saturn,
-                2.257664e+08, 7.335596e+07, 1.152273e+04,
+        addBodyFromKepler("Enceladus", 1.0802e20, saturn,
+                237948e3, 0.0047, 0.009, 8.0, 78.0, 300.0,
                 252100.0f, 0.95f, 0.95f, 1.0f);
 
-        addBodyWithRelativeVelocity("Mimas", 3.749300e+19, saturn,
-                -1.352228e+08, -1.217093e+08, -3.340126e+06,
+        addBodyFromKepler("Mimas", 3.7493e19, saturn,
+                185520e3, 0.0196, 1.572, 83.0, 210.0, 12.0,
                 198200.0f, 0.7f, 0.7f, 0.8f);
 
-        // --- Uranus ---
-        addBodyWithRelativeVelocity("Titania", 3.527000e+21, uranus,
-                -3.782374e+08, -2.183753e+08, -3.010982e+05,
+        // --- Uranus (regular large moons) ---
+        addBodyFromKepler("Titania", 3.527e21, uranus,
+                436300e3, 0.0011, 0.079, 120.0, 10.0, 200.0,
                 788900.0f, 0.7f, 0.8f, 0.9f);
 
-        addBodyWithRelativeVelocity("Oberon", 3.014000e+21, uranus,
-                0.000000e+00, 5.829938e+08, 6.919113e+05,
+        addBodyFromKepler("Oberon", 3.014e21, uranus,
+                583520e3, 0.0014, 0.068, 25.0, 40.0, 50.0,
                 761400.0f, 0.6f, 0.7f, 0.8f);
 
-        addBodyWithRelativeVelocity("Umbriel", 1.172000e+21, uranus,
-                -1.043081e-07, -2.654776e+08, -5.930837e+05,
+        addBodyFromKepler("Umbriel", 1.172e21, uranus,
+                266000e3, 0.0039, 0.128, 78.0, 330.0, 300.0,
                 584700.0f, 0.55f, 0.6f, 0.7f);
 
-        addBodyWithRelativeVelocity("Ariel", 1.353000e+21, uranus,
-                -2.980232e-08, -1.911935e+08, -8.676146e+05,
+        addBodyFromKepler("Ariel", 1.353e21, uranus,
+                191020e3, 0.0012, 0.260, 200.0, 130.0, 140.0,
                 578900.0f, 0.7f, 0.7f, 0.8f);
 
-        addBodyWithRelativeVelocity("Miranda", 6.590000e+19, uranus,
-                1.059543e+08, -7.418751e+07, -6.033977e+05,
+        addBodyFromKepler("Miranda", 6.59e19, uranus,
+                129390e3, 0.0013, 0.466, 310.0, 250.0, 75.0,
                 235800.0f, 0.6f, 0.6f, 0.7f);
 
         // --- Neptune ---
-        addBodyWithRelativeVelocity("Triton", 2.140000e+22, neptune,
-                -1.983763e+08, 2.704535e+08, -1.155535e+08,
+        addBodyFromKepler("Triton", 2.14e22, neptune,
+                354760e3, 0.000016, 156.865, 98.0, 256.0, 340.0,
                 1353400.0f, 0.6f, 0.7f, 0.95f);
 
-        // --- Pluto ---
-        addBodyWithRelativeVelocity("Charon", 1.586000e+21, pluto,
-                -1.960392e+07, 2.400788e-09, 0.000000e+00,
+        // --- Pluto / Charon ---
+        addBodyFromKepler("Charon", 1.586e21, pluto,
+                19600e3, 0.0002, 0.0, 0.0, 0.0, 180.0,
                 606000.0f, 0.7f, 0.6f, 0.6f);
     }
 
@@ -404,8 +405,10 @@ public class Simulation {
         double cz = bodies.size > 0 ? bodies.get(0).pos[2] : 0.0;
         double centralMass = bodies.size > 0 ? bodies.get(0).mass : 0.0;
 
+        // pass null orbitalNormal so OrbitUtils will numerically estimate an orbital
+        // normal
         double[] tangential = OrbitUtils.computeCircularVelocity(simX, simY, simZ, cx, cy, cz, centralMass,
-                Simulation.G_SIM);
+                Simulation.G_SIM, null);
 
         double totalVx_mps = (simVx + tangential[0]) * Simulation.LENGTH_SCALE;
         double totalVy_mps = (simVy + tangential[1]) * Simulation.LENGTH_SCALE;
@@ -414,24 +417,105 @@ public class Simulation {
         addBody(name, mass, x, y, z, totalVx_mps, totalVy_mps, totalVz_mps, radius, r, g, b);
     }
 
-    private void addBodyWithRelativeVelocity(String name, double mass, Body parent, double relX, double relY,
-            double relZ, float radius, float r, float g, float b) {
-        double simRelX = relX / LENGTH_SCALE;
-        double simRelY = relY / LENGTH_SCALE;
-        double simRelZ = relZ / LENGTH_SCALE;
-        double x = parent.pos[0] + simRelX;
-        double y = parent.pos[1] + simRelY;
-        double z = parent.pos[2] + simRelZ;
+    /**
+     * Add a body by Kepler elements (planet-centered). This helper
+     * computes the
+     * cartesian rel-position and the correct tangential velocity placed inside the
+     * orbital plane.
+     * a: meters, e, i (degrees), raan (deg), argp (deg), nu (deg)
+     */
+    private void addBodyFromKepler(String name, double mass, Body parent,
+            double a, double e, double iDeg, double raanDeg, double argpDeg, double nuDeg,
+            float radius, float r, float g, float b) {
+        double[] rel = keplerToCartesian(a, e, iDeg, raanDeg, argpDeg, nuDeg); // meters
+        double[] n = keplerOrbitNormal(iDeg, raanDeg, argpDeg);
 
-        double[] tangential = OrbitUtils.computeCircularVelocity(x, y, z, parent.pos[0], parent.pos[1], parent.pos[2],
-                parent.mass, Simulation.G_SIM);
+        double simRelX = rel[0] / LENGTH_SCALE;
+        double simRelY = rel[1] / LENGTH_SCALE;
+        double simRelZ = rel[2] / LENGTH_SCALE;
+        double px = parent.pos[0] + simRelX;
+        double py = parent.pos[1] + simRelY;
+        double pz = parent.pos[2] + simRelZ;
+
+        double[] tangential = OrbitUtils.computeCircularVelocity(px, py, pz,
+                parent.pos[0], parent.pos[1], parent.pos[2], parent.mass, Simulation.G_SIM, n);
 
         addBody(name, mass,
-                x * Simulation.LENGTH_SCALE, y * Simulation.LENGTH_SCALE, z * Simulation.LENGTH_SCALE,
-                (parent.vel[0] + tangential[0]) * Simulation.LENGTH_SCALE,
-                (parent.vel[1] + tangential[1]) * Simulation.LENGTH_SCALE,
-                (parent.vel[2] + tangential[2]) * Simulation.LENGTH_SCALE,
+                px * LENGTH_SCALE, py * LENGTH_SCALE, pz * LENGTH_SCALE,
+                (parent.vel[0] + tangential[0]) * LENGTH_SCALE,
+                (parent.vel[1] + tangential[1]) * LENGTH_SCALE,
+                (parent.vel[2] + tangential[2]) * LENGTH_SCALE,
                 radius, r, g, b);
+    }
+
+    // Kepler -> Cartesian (planet-centered) in meters
+    // a: semi-major axis (m)
+    // e: eccentricity
+    // iDeg: inclination (degrees)
+    // raanDeg: longitude of ascending node Ω (degrees)
+    // argpDeg: argument of periapsis ω (degrees)
+    // nuDeg: true anomaly ν (degrees)
+    @SuppressWarnings("unused")
+    private static double[] keplerToCartesian(double a, double e,
+            double iDeg, double raanDeg,
+            double argpDeg, double nuDeg) {
+        double i = Math.toRadians(iDeg);
+        double raan = Math.toRadians(raanDeg);
+        double argp = Math.toRadians(argpDeg);
+        double nu = Math.toRadians(nuDeg);
+
+        // radius in orbital plane
+        double r = a * (1 - e * e) / (1 + e * Math.cos(nu));
+
+        // position in perifocal (orbital) coordinate system
+        double xP = r * Math.cos(nu);
+        double yP = r * Math.sin(nu);
+        double zP = 0.0;
+
+        // Rotation: r_eci = Rz(Ω) * Rx(i) * Rz(ω) * r_perifocal
+        double cosO = Math.cos(raan), sinO = Math.sin(raan);
+        double cosi = Math.cos(i), sini = Math.sin(i);
+        double cosw = Math.cos(argp), sinw = Math.sin(argp);
+
+        // Components of rotation matrix (3x3)
+        double r11 = cosO * cosw - sinO * sinw * cosi;
+        double r12 = -cosO * sinw - sinO * cosw * cosi;
+        double r13 = sinO * sini;
+
+        double r21 = sinO * cosw + cosO * sinw * cosi;
+        double r22 = -sinO * sinw + cosO * cosw * cosi;
+        double r23 = -cosO * sini;
+
+        double r31 = sinw * sini;
+        double r32 = cosw * sini;
+        double r33 = cosi;
+
+        // multiply matrix by perifocal vector [xP, yP, 0]
+        double x = r11 * xP + r12 * yP; // + r13*0
+        double y = r21 * xP + r22 * yP; // + r23*0
+        double z = r31 * xP + r32 * yP; // + r33*0
+
+        return new double[] { x, y, z };
+    }
+
+    // compute orbital normal from classical elements (degrees). Uses same rotation
+    // R = Rz(Ω) Rx(i) Rz(ω)
+    @SuppressWarnings("unused")
+    private static double[] keplerOrbitNormal(double iDeg, double raanDeg, double argpDeg) {
+        double i = Math.toRadians(iDeg);
+        double raan = Math.toRadians(raanDeg);
+        double argp = Math.toRadians(argpDeg);
+        double cosO = Math.cos(raan), sinO = Math.sin(raan);
+        double cosi = Math.cos(i), sini = Math.sin(i);
+        double cosw = Math.cos(argp), sinw = Math.sin(argp);
+        // third column of R (R * (0,0,1)) gives orbital normal:
+        double nx = sinO * sini;
+        double ny = -cosO * sini;
+        double nz = cosi;
+        double nlen = Math.sqrt(nx * nx + ny * ny + nz * nz);
+        if (nlen < 1e-12)
+            return new double[] { 0, 1, 0 };
+        return new double[] { nx / nlen, ny / nlen, nz / nlen };
     }
 
     private String formatElapsedTime(float seconds) {
