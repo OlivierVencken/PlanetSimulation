@@ -84,7 +84,7 @@ public class Simulation {
     // gravitational constant adjusted to simulation units: G_SIM = G * MASS_SCALE /
     // Ls^3
     public static final double G_SIM = G * MASS_SCALE / (LENGTH_SCALE * LENGTH_SCALE * LENGTH_SCALE);
-    public static final double SOFTENING = 1e-3;
+    public static final double SOFTENING = 0; //1e-3
 
     public void create() {
         modelBuilder = new ModelBuilder();
@@ -102,7 +102,7 @@ public class Simulation {
         camera.far = 10000f;
         camera.update();
 
-        starfield = new StarfieldRenderer(10000); 
+        starfield = new StarfieldRenderer(10000);
         starfield.create(camera);
 
         physics = new PhysicsEngine(bodies);
@@ -262,8 +262,108 @@ public class Simulation {
         addOrbitingBody("Uranus", 8.6810e25, 2871e9, 0, 0, 0, 0, 0, 25362e3f, 0.7f, 0.8f, 0.3f);
         addOrbitingBody("Neptune", 1.02413e26, 4495e9, 0, 0, 0, 0, 0, 24622e3f, 0.5f, 0.6f, 0.2f);
 
+        // --- dwarf planets ---
+        addOrbitingBody("Pluto", 1.303e22, 5.906376e12, 0, 0, 0, 0, 0, 1188.3e3f, 0.8f, 0.6f, 0.5f);
+        addOrbitingBody("Ceres", 9.393e20, 414.01e9, 0, 0, 0, 0, 0, 473.0e3f, 0.6f, 0.6f, 0.6f);
+
         Body earth = bodies.get(3);
-        addBodyWithRelativeVelocity("Moon", 7.342e22, earth, 0, 384400e3, 0, 1737.4e3f, 0.8f, 0.8f, 0.8f);
+        Body mars = bodies.get(4);
+        Body jupiter = bodies.get(5);
+        Body saturn = bodies.get(6);
+        Body uranus = bodies.get(7);
+        Body neptune = bodies.get(8);
+        Body pluto = bodies.get(9);
+
+        // --- Earth ---
+        addBodyWithRelativeVelocity("Moon", 7.342000e+22, earth,
+                3.683615e+08, 2.019048e+07, 1.817938e+06,
+                1737400.0f, 0.8f, 0.8f, 0.8f);
+
+        // --- Mars ---
+        addBodyWithRelativeVelocity("Phobos", 1.065900e+16, mars,
+                9.095125e+06, 1.603433e+06, 3.010441e+04,
+                11270.0f, 0.5f, 0.5f, 0.5f);
+
+        addBodyWithRelativeVelocity("Deimos", 1.476200e+15, mars,
+                -1.173041e+07, 2.030777e+07, 6.338690e+05,
+                6200.0f, 0.6f, 0.6f, 0.6f);
+
+        // --- Jupiter ---
+        addBodyWithRelativeVelocity("Io", 8.930000e+22, jupiter,
+                -1.717852e+08, 3.835097e+08, 3.346754e+05,
+                1821600.0f, 0.95f, 0.75f, 0.35f);
+
+        addBodyWithRelativeVelocity("Europa", 4.800000e+22, jupiter,
+                -6.576218e+08, 1.281818e+08, 1.051505e+06,
+                1560800.0f, 0.9f, 0.9f, 1.0f);
+
+        addBodyWithRelativeVelocity("Ganymede", 1.481900e+23, jupiter,
+                9.496836e+08, -4.961215e+08, -1.532640e+06,
+                2631200.0f, 0.7f, 0.7f, 0.8f);
+
+        addBodyWithRelativeVelocity("Callisto", 1.075900e+23, jupiter,
+                1.276965e+09, -1.386591e+09, -4.646530e+06,
+                2410300.0f, 0.55f, 0.55f, 0.55f);
+
+        // --- Saturn ---
+        addBodyWithRelativeVelocity("Titan", 1.345200e+23, saturn,
+                -8.662181e+08, -8.224852e+08, -4.737227e+06,
+                2574700.0f, 1.0f, 0.6f, 0.3f);
+
+        addBodyWithRelativeVelocity("Rhea", 2.306500e+21, saturn,
+                -5.068090e+08, 1.448344e+08, 8.721146e+05,
+                764300.0f, 0.75f, 0.75f, 0.75f);
+
+        addBodyWithRelativeVelocity("Iapetus", 1.805600e+21, saturn,
+                2.344478e+09, 2.770206e+09, 3.641635e+08,
+                734500.0f, 0.82f, 0.72f, 0.6f);
+
+        addBodyWithRelativeVelocity("Dione", 1.095500e+21, saturn,
+                3.492484e+08, 1.411055e+08, 4.679236e+04,
+                561400.0f, 0.78f, 0.78f, 0.78f);
+
+        addBodyWithRelativeVelocity("Tethys", 6.175000e+20, saturn,
+                1.473438e+08, -2.551608e+08, -4.859242e+06,
+                531100.0f, 0.8f, 0.8f, 0.8f);
+
+        addBodyWithRelativeVelocity("Enceladus", 1.080200e+20, saturn,
+                2.257664e+08, 7.335596e+07, 1.152273e+04,
+                252100.0f, 0.95f, 0.95f, 1.0f);
+
+        addBodyWithRelativeVelocity("Mimas", 3.749300e+19, saturn,
+                -1.352228e+08, -1.217093e+08, -3.340126e+06,
+                198200.0f, 0.7f, 0.7f, 0.8f);
+
+        // --- Uranus ---
+        addBodyWithRelativeVelocity("Titania", 3.527000e+21, uranus,
+                -3.782374e+08, -2.183753e+08, -3.010982e+05,
+                788900.0f, 0.7f, 0.8f, 0.9f);
+
+        addBodyWithRelativeVelocity("Oberon", 3.014000e+21, uranus,
+                0.000000e+00, 5.829938e+08, 6.919113e+05,
+                761400.0f, 0.6f, 0.7f, 0.8f);
+
+        addBodyWithRelativeVelocity("Umbriel", 1.172000e+21, uranus,
+                -1.043081e-07, -2.654776e+08, -5.930837e+05,
+                584700.0f, 0.55f, 0.6f, 0.7f);
+
+        addBodyWithRelativeVelocity("Ariel", 1.353000e+21, uranus,
+                -2.980232e-08, -1.911935e+08, -8.676146e+05,
+                578900.0f, 0.7f, 0.7f, 0.8f);
+
+        addBodyWithRelativeVelocity("Miranda", 6.590000e+19, uranus,
+                1.059543e+08, -7.418751e+07, -6.033977e+05,
+                235800.0f, 0.6f, 0.6f, 0.7f);
+
+        // --- Neptune ---
+        addBodyWithRelativeVelocity("Triton", 2.140000e+22, neptune,
+                -1.983763e+08, 2.704535e+08, -1.155535e+08,
+                1353400.0f, 0.6f, 0.7f, 0.95f);
+
+        // --- Pluto ---
+        addBodyWithRelativeVelocity("Charon", 1.586000e+21, pluto,
+                -1.960392e+07, 2.400788e-09, 0.000000e+00,
+                606000.0f, 0.7f, 0.6f, 0.6f);
     }
 
     private void addBody(String name, double mass, double x, double y, double z,
