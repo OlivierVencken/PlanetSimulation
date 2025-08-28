@@ -205,9 +205,9 @@ public class FirstPersonCameraController extends InputAdapter {
             if (back)
                 orbitCamera(0f, -moveSpeed * delta); // down
             if (right)
-                orbitCamera(moveSpeed * delta, 0f); // right
+                orbitCamera(-moveSpeed * delta, 0f); // right
             if (left)
-                orbitCamera(-moveSpeed * delta, 0f); // left
+                orbitCamera(moveSpeed * delta, 0f); // left
 
             camera.position.set(x, y, z);
             camera.lookAt((float) b.pos[0], (float) b.pos[1], (float) b.pos[2]);
@@ -230,7 +230,7 @@ public class FirstPersonCameraController extends InputAdapter {
         // fills roughly DEFAULT_FOCUS_FRACTION of the vertical FOV.
         float R = (float) b.radius; // sim units
         float fovRad = MathUtils.degreesToRadians * camera.fieldOfView;
-        float halfView = fovRad * DEFAULT_FOCUS_FRACTION * 0.5f;
+        float halfView = fovRad * DEFAULT_FOCUS_FRACTION * 0.2f;
         float sinHalf = MathUtils.sin(halfView);
         float desired;
         if (sinHalf <= 1e-6f) {

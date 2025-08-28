@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.MathUtils;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
@@ -38,10 +39,6 @@ public class BodyRenderer {
         glowTexture = createGlowTexture(128);
         glowTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
         glowRegion = new TextureRegion(glowTexture);
-    }
-
-    public ModelBatch getModelBatch() {
-        return modelBatch;
     }
 
     private Texture createGlowTexture(int size) {
@@ -85,14 +82,13 @@ public class BodyRenderer {
     }
 
     public void render(PerspectiveCamera cam, Environment environment, Array<Body> bodies) {
-        // Enable for 3d rendering without glow
-        //modelBatch.begin(cam);
-        //for (Body b : bodies) {
-        //    b.instance.transform.setToTranslation((float) b.pos[0], (float) b.pos[1],
-        //            (float) b.pos[2]);
-        //    modelBatch.render(b.instance, environment);
-        //}
-        //modelBatch.end();
+        modelBatch.begin(cam);
+        for (Body b : bodies) {
+            b.instance.transform.setToTranslation((float) b.pos[0], (float) b.pos[1],
+                    (float) b.pos[2]);
+            modelBatch.render(b.instance, environment);
+        }
+        modelBatch.end();
 
         // Render glow effect for each body
         orthoMatrix.setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -141,9 +137,9 @@ public class BodyRenderer {
             float distAtten = 1f / (1f + dist * 0.003f);
             distAtten = Math.max(0.12f, Math.min(1f, distAtten));
 
-            float outerScale = 1.4f;
-            float midScale = 1.25f;
-            float coreScale = 1f;
+            float outerScale = 1.75f;
+            float midScale = 1.5f;
+            float coreScale = 1.25f;
 
             float outerSize = pixelRadius * 2f * outerScale;
             float midSize = pixelRadius * 2f * midScale;
@@ -176,19 +172,12 @@ public class BodyRenderer {
                     tmpProj.y - coreSize * 0.5f,
                     coreSize, coreSize);
 
-            // draw second time with reduced size to concentrate brightness
-            float coreInnerSize = coreSize * 0.6f;
-            spriteBatch.draw(glowRegion,
-                    tmpProj.x - coreInnerSize * 0.5f,
-                    tmpProj.y - coreInnerSize * 0.5f,
-                    coreInnerSize, coreInnerSize);
-
             spriteBatch.flush();
             Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
         }
 
         spriteBatch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-        spriteBatch.setColor(com.badlogic.gdx.graphics.Color.WHITE);
+        spriteBatch.setColor(Color.WHITE);
         spriteBatch.end();
     }
 
@@ -196,5 +185,9 @@ public class BodyRenderer {
         modelBatch.dispose();
         spriteBatch.dispose();
         glowRegion.getTexture().dispose();
+    }
+
+    public ModelBatch getModelBatch() {
+        return modelBatch;
     }
 }

@@ -19,7 +19,6 @@ import java.util.Random;
  */
 public class StarfieldRenderer {
     private final int starCount;
-    private final Array<Vector3> stars = new Array<>();
     private final Array<Vector3> dirs = new Array<>();
     private final float[] sizes;
     private final float[] brightness;
@@ -67,7 +66,6 @@ public class StarfieldRenderer {
 
         // generate stars placed on a sphere of radius `starRadius`
         dirs.clear();
-        stars.clear(); // keep sizes/brightness arrays
         for (int i = 0; i < starCount; i++) {
             // uniform direction on sphere (unit vector)
             float u = rng.nextFloat() * 2f - 1f;
@@ -126,8 +124,7 @@ public class StarfieldRenderer {
             float flick = 1f;
             if (enableFlicker) {
                 // simple per-star phase using RNG seeded deterministically from position
-                float phase = (float) ((tmp.x * 73428791L + tmp.y * 91278361L + tmp.z * 16273841L)
-                        % 10000) / 10000f;
+                float phase = (float) ((dir.x * 73428791L + dir.y * 91278361L + dir.z * 16273841L) % 10000) / 10000f;
                 float t = (time * flickerSpeed + phase * MathUtils.PI2);
                 flick = 0.75f + 0.25f * (0.5f + 0.5f * MathUtils.sin(t));
             }
@@ -191,7 +188,7 @@ public class StarfieldRenderer {
         if (starTexture != null) {
             starTexture.dispose();
         }
-        stars.clear();
+        dirs.clear();
     }
 
     /**

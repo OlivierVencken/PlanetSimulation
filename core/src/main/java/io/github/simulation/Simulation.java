@@ -69,7 +69,7 @@ public class Simulation {
     private Label focusedSpeedLabel;
 
     private boolean paused = false;
-    private boolean trailsEnabled = true;
+    private boolean trailsEnabled = false;
     private boolean showGrid = false;
 
     // simulation parameters
