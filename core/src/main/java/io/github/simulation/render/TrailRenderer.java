@@ -45,22 +45,8 @@ public class TrailRenderer {
 
     private void createShader() {
         // Minimal vertex and fragment shaders compatible with LibGDX vertex attributes
-        String vertexShader = "attribute vec3 a_position;\n" +
-                "attribute vec4 a_color;\n" +
-                "uniform mat4 u_projViewTrans;\n" +
-                "varying vec4 v_color;\n" +
-                "void main() {\n" +
-                "    v_color = a_color;\n" +
-                "    gl_Position = u_projViewTrans * vec4(a_position, 1.0);\n" +
-                "}\n";
-
-        String fragmentShader = "#ifdef GL_ES\n" +
-                "precision mediump float;\n" +
-                "#endif\n" +
-                "varying vec4 v_color;\n" +
-                "void main() {\n" +
-                "    gl_FragColor = v_color;\n" +
-                "}\n";
+        String vertexShader = Gdx.files.internal("shaders/trail.vert").readString();
+        String fragmentShader = Gdx.files.internal("shaders/trail.frag").readString();
 
         ShaderProgram.pedantic = false;
         shader = new ShaderProgram(vertexShader, fragmentShader);
@@ -160,6 +146,8 @@ public class TrailRenderer {
 
         shader.bind();
         shader.setUniformMatrix("u_projViewTrans", cam.combined);
+        shader.setUniformf("u_time", simTime);
+        shader.setUniformf("u_resolution", (float) Gdx.graphics.getWidth(), (float) Gdx.graphics.getHeight());
         mesh.render(shader, GL20.GL_LINES);
     }
 

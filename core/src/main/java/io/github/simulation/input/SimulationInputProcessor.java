@@ -2,6 +2,7 @@
 package io.github.simulation.input;
 
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 
 import io.github.simulation.Simulation;
@@ -57,7 +58,7 @@ public class SimulationInputProcessor extends InputAdapter {
                 sim.setGridShown(!sim.isGridShown());
                 return true;
             case Input.Keys.ESCAPE:
-                System.exit(0);
+                Gdx.app.exit();
                 return true;
         }
         return false;
